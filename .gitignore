@@ -1,0 +1,15 @@
+# Ignorar archivos generados por MATLAB y su entorno
+*.asv
+*.m~
+*.mat
+*.slx.r*
+*.mdl.r*
+
+# Directorios de configuración de proyecto de MATLAB
+**/resources/
+*.prj
+**/toolbox.ignore
+
+# Nubes de puntos pesadas (opcional si son muy grandes, lo comento por si prefieres subirlas)
+# *.ply
+# *.pcd
