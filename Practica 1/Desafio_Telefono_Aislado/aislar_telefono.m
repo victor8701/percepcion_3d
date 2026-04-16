@@ -2,8 +2,12 @@
 % DESAFÍO 1: Aislar el teléfono de la escena iterativamente
 % =========================================================================
 
+% BLOQUEO DE LA SEMILLA: MSAC/RANSAC es un algoritmo estadístico aleatorio. 
+% Si no bloqueamos la semilla matemática, un pequeño cambio en la muestra 
+% de puntos aleatorios hace que la pared se coma al teléfono entre ejecuciones.
+rng(5); % Forzamos a que el sistema devuelva SIEMPRE los mismos puntos aleatorios
+
 % 1. Cargar nube de puntos original
-% Obtenemos la ruta donde reside este propio script para evitar fallos de MATLAB
 scriptDir = fileparts(mfilename('fullpath'));
 rutaNube = fullfile(scriptDir, '..', 'Practica 1', 'objetos.ply');
 pc = pcread(rutaNube); 
@@ -11,56 +15,58 @@ pc = pcread(rutaNube);
 disp('1. Nube de objetos original cargada.');
 
 % --- Fase Angular: Recorte Geométrico Secuencial ---
-
-% 2. Quitar Plano 1 (Suelo/Mesa) - Tolerancia equilibrada (2 cm)
+% 2. Mesa/Suelo
 [~, ~, out1] = pcfitplane(pc, 0.02);
 resto = select(pc, out1);
-disp('2. Mesa/Suelo eliminado.');
 
-% 3. Quitar Plano 2 (Pared de fondo)
+% 3. Primera pared
 [~, ~, out2] = pcfitplane(resto, 0.02);
 resto = select(resto, out2);
-disp('3. Primera pared eliminada.');
 
-% 4. Quitar Plano 3 (Segunda lateral o superficie secundaria)
+% 4. Segunda pared
 [~, ~, out3] = pcfitplane(resto, 0.02);
 resto = select(resto, out3);
-disp('4. Segunda pared eliminada.');
 
-% 5. Quitar Cilindro (bote)
+% 5. Cilindro
 [~, ~, outCil] = pcfitcylinder(resto, 0.02);
 resto = select(resto, outCil);
-disp('5. Cilindro u objeto tubular eliminado.');
 
-% 6. Quitar Esfera (pelota)
+% 6. Esfera 
 [~, ~, outEsf] = pcfitsphere(resto, 0.02);
 nube_sucia = select(resto, outEsf); 
 
-% --- Mejora de Calidad Computacional ---
-% Al aplicar RANSAC puramente geométrico, siempre quedan algunas 'chispas'
-% flotando (ruido residual) que desastabilizan visualmente al sujeto restante.
-% 7. Segmentación final: nos quedamos solo con la masa contigua principal.
-[labels, numClusters] = pcsegdist(nube_sucia, 0.03); 
-val_freq = mode(labels); % Hallar el grupo numérico que posee más puntos
+% 7. Extracción Final
+[labels, ~] = pcsegdist(nube_sucia, 0.03); 
+val_freq = mode(labels); % Aislar el cluster principal
 idx_telefono = find(labels == val_freq);
 nube_telefono = select(nube_sucia, idx_telefono);
 
-disp('6. Esfera eliminada. Teléfono destilado del ruido flotante.');
+disp('2. Teléfono extraído con éxito.');
 
 % =========================================================================
 % Visualización del Resultado Final
 % =========================================================================
 figure('Name', 'Desafío 1: Teléfono Aislado', 'NumberTitle', 'off');
 
-subplot(1, 2, 1);
+% Gráfica 1: Original
+subplot(1, 3, 1);
 pcshow(pc);
 title('Escena Original');
 
-subplot(1, 2, 2);
-pcshow(nube_telefono); % Al haber cribado todas las geometrías puras, queda la irregular (teléfono)
-title('Teléfono Aislado (Residuo)');
+% Gráfica 2: Teléfono extraído (MATLAB hace auto-zoom a este bloque)
+subplot(1, 3, 2);
+pcshow(nube_telefono); 
+title('Teléfono Aislado (Auto-Zoom)');
 
-set(gcf, 'Position', [100, 100, 1000, 500]);
+% Gráfica 3: Teléfono extraído pero con la cámara en las coordenadas originales
+subplot(1, 3, 3);
+pcshow(nube_telefono);
+xlim(pc.XLimits);
+ylim(pc.YLimits);
+zlim(pc.ZLimits);
+title('Teléfono (Ejes de la Escena)');
+
+set(gcf, 'Position', [100, 100, 1500, 500]);
 
 % Guardar captura asegurando que se crea en el directorio correcto
 imageFolder = fullfile(scriptDir, 'images');

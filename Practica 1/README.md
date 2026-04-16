@@ -68,4 +68,9 @@ El algoritmo busca y separa todos los grupos de puntos que posean un vacío inte
 
 ![Segmentación de Múltiples Esferas](images/ejercicio_segmentacion.png)
 
-> **Nota:** Las imágenes de esta sección se generan y guardan automáticamente en la carpeta `images/` al ejecutar los respectivos archivos `.m` en tu ventana de MATLAB.
+### 10. Desafíos Finales Evaluables
+Para la puesta en práctica de todos los conocimientos algorítmicos encadenados mostrados en los ejercicios anteriores, se han resuelto dos problemas analíticos complejos de gran desempeño:
+* **[Desafío 1: Aislar el Teléfono](Desafio_Telefono_Aislado/)**: Implementación de MSAC geométrico destructivo encadenando múltiples capas (`pcfitplane` para habitación y mesa, `pcfitcylinder` para tazas, `pcfitsphere` para ornamentos y segmentación final por distancias). Aísla y extrae la malla de un modelo impuro indetectable del centro de una superficie.
+* **[Desafío 2: Inventario Urbano](Desafio_Inventario_Urbano/)**: Tubería (*pipeline*) heurística en escáner denso exterior: Downsampling para viabilidad de carga, erradicación de asfalto paramétrica (`pcfitplane` sobre el vector Z), limpiezas estadísticas (`pcdenoise`) y segmentación espacial (`pcsegdist`) para contabilizar y colorear de forma automatizada las entidades físicas.
+
+> **Nota:** Las imágenes incrustadas dentro de los READMEs de cada subsección se generan y guardan automáticamente en la carpeta `images/` de su correspondiente nivel al ejecutar los archivos `.m` en la interfaz de usuario de MATLAB.
