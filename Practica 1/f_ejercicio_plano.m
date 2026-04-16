@@ -27,25 +27,4 @@ if ~exist('images', 'dir'), mkdir('images'); end
 saveas(gcf, 'images/ejercicio_planos_mesa.png');
 
 
-%% PARTE 2: Búsqueda guiada por Vector de Referencia
-% Ideal para localizar el suelo asfáltico sabiendo que es totalmente plano a nuestros pies.
-pc_calle = pcread('Practica 1/calle1.pcd'); % Usamos nube tipo PCD por variar
-
-% Queremos que busque un plano cuya orientación normal sea paralela al eje Z
-vec = [0, 0, 1];
-
-% Tolerancia alta (0.2) debido a los desniveles/ruido en la calle exterior
-[plano_suelo, inSuelo, outSuelo] = pcfitplane(pc_calle, 0.2, vec);
-nube_suelo = select(pc_calle, inSuelo);
-
-% Visualización superpuesta
-figure('Name', 'Detección de Suelo con Vector Director', 'NumberTitle', 'off');
-pcshow(pc_calle);
-hold on;
-% Función de dibujo estadístico matemático del área hallada
-plot(plano_suelo, 'Color', [0 1 0]); 
-title('Plano de suelo detectado (Vector Ref en el eje Z)');
-hold off;
-
-% Guardar imagen para el README
-saveas(gcf, 'images/ejercicio_plano_calle.png');
+% Final de script

@@ -44,12 +44,28 @@ Para cada punto, la función `pcnormals` ajusta un plano local estimando la perp
 
 ![Cálculo de normales](images/ejercicio_normales.png)
 
-### 6. Ajuste Geométrico de Planos (`f_ejercicio_plano.m`)
-Búsqueda de planos matemáticos utilizando el algoritmo iterativo MSAC mediante la función `pcfitplane`. El script realiza y compara dos enfoques:
-1. **Búsqueda ciega o iterativa:** Encuentra el plano de mayor tamaño en un archivo, separa e ignora esos puntos, y repite la búsqueda de un segundo plano en los puntos restantes que habían sido descartados (`mesa.ply`).
-2. **Búsqueda guiada por vector:** Usa un vector de orientación de referencia `[0,0,1]` en el espacio para forzar la búsqueda matemática de planos solamente horizontales, logrando detectar perfectamente el asfalto del suelo exterior (`calle1.pcd`).
+### 6. Ajuste Geométrico de Planos Iterativos (`f_ejercicio_plano.m`)
+Búsqueda de planos utilizando el algoritmo estadístico MSAC (`pcfitplane`). El script ejecuta una **búsqueda ciega o iterativa** en la nube de puntos (`mesa.ply`): localiza el plano dominante, extrae sus puntos, aisla el "resto" de la escena, y repite la operación matemática para encontrar el segundo plano más predominante subyacente.
 
 ![Planos Iterativos en la Mesa](images/ejercicio_planos_mesa.png)
-![Plano del suelo en la Calle](images/ejercicio_plano_calle.png)
+
+### 7. Detección de Suelo Asfáltico (`g_ejercicio_suelo.m`)
+Una variante del ajuste de planos sobre nubes captadas en exteriores (`calle1.pcd`). En lugar de realizar una búsqueda ciega, el algoritmo reciba el **vector director cartesiano `[0,0,1]`** de la perpendicular local. Gracias a esto y a una tolerancia incrementada de `0.2` frente a imperfecciones, el script logra detectar matemáticamente el suelo frente al resto del entorno.
+
+![Plano del suelo en la Calle](images/ejercicio_suelo_calle.png)
+
+### 8. Funciones para encontrar Objetos (`h_ejercicio_objetos.m`)
+Igual que podemos aproximar superficies lisas o planos, el uso de los algoritmos RANSAC/MSAC junto a la familia de funciones geométricas de la Toolbox nos permite encajar volúmenes sobre la nube de puntos. El script procesa el espacio tridimensional del archivo `objetos.ply` intentando detectar y encajar de manera autónoma primitivas en 3D correspondientes a:
+* **Un cilindro** (ej: tuberías, tazas) mediante `pcfitcylinder`.
+* **Una esfera** (ej: balones, esferas de calibración) mediante `pcfitsphere`.
+*(Nota: Tal y como ilustran las diapositivas, las funciones se aplican directamente sobre la nube cruda. Dependiendo de la topografía, el algoritmo puede confundir la inmensa cantidad de puntos del suelo como ser caras gigantes planas de esos objetos).*
+
+![Objetos Geométricos Modelados](images/ejercicio_objetos.png)
+
+### 9. Segmentación por Distancia Física (`i_ejercicio_segmentacion.m`)
+Para diferenciar qué puntos pertenecen a qué objetos basándonos únicamente en sus huecos (sin importar su forma o geometría como antes), se utiliza la función agrupadora `pcsegdist`.
+El algoritmo busca y separa todos los grupos de puntos que posean un vacío intermedio superior a la métrica fijada (`minDistance = 0.5`). Esto nos devuelve de manera automática un mapeado (`labels`) que podemos utilizar para colorear cada clúster y aislar computacionalmente los objetos que queramos para procesarlos (`esferas_2.ply`).
+
+![Segmentación de Múltiples Esferas](images/ejercicio_segmentacion.png)
 
 > **Nota:** Las imágenes de esta sección se generan y guardan automáticamente en la carpeta `images/` al ejecutar los respectivos archivos `.m` en tu ventana de MATLAB.
