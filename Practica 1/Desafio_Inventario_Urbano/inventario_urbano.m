@@ -23,24 +23,33 @@ z_limits = [-2, 5];   % Evitamos el cielo y ruido bajo tierra
 roi = [x_limits; y_limits; z_limits];
 idx_roi = findPointsInROI(pc, roi);
 pc_filtrada = select(pc, idx_roi);
-disp('2. Recorte de Región de Interés (Slider simulado) aplicado.');
+
+% --- Optimización Computacional ---
+% La calle es inmensa. Hacemos un downsample para retener solo 1 punto representativo
+% por cada bloque de 10cm, aligerando el cálculo x100 y limpiando el ruido general
+gridStep = 0.1; 
+pc_filtrada = pcdownsample(pc_filtrada, 'gridAverage', gridStep);
+disp('2. Recorte ROI y Downsampling (0.1m) ejecutado exitosamente.');
 
 
 % 3. Extracción del asfalto/calzada
 % Sabiendo que el suelo es puramente horizontal (vector Director Z)
-distanciaMax = 0.3; % Métrica superior frente al ruido de los bordillos
+distanciaMax = 0.25; % Tolerancia
 [~, ~, idx_sinSuelo] = pcfitplane(pc_filtrada, distanciaMax, [0,0,1]);
 
 % Nos quedamos con el resto, es decir, todo lo que "sobresale" del asfalto
-pc_objetos = select(pc_filtrada, idx_sinSuelo);
-disp('3. Asfalto y aceras matemáticamente purgadas.');
+pc_objetos_sucios = select(pc_filtrada, idx_sinSuelo);
+
+% Limpiamos manchas flotantes de asfalto mal recortadas para que el clustering no falle
+pc_objetos = pcdenoise(pc_objetos_sucios, 'NumNeighbors', 10, 'Threshold', 0.5);
+disp('3. Asfalto purgado y ruido denoisado.');
 
 
 % --- Fase 2: Inventariado y Clustering ---
 
 % 4. Detección heurística de árboles, coches y estructuras
-% Dado que un árbol no es una esfera ni un cilindro perfecto, usamos distancias.
-distanciaVacio = 0.6; % Si hay un hueco mayor a 60cm, consideramos que es un objeto diferente
+% Dado que un árbol no es una forma pura, usamos segmentación espacial.
+distanciaVacio = 0.5; % Huecos superiores a medio metro dividen la geometría como objetos distintos
 [etiquetas, numObjetos] = pcsegdist(pc_objetos, distanciaVacio);
 
 disp(['4. Segmentación finalizada. Detectados ', num2str(numObjetos), ' objetos (ej. árboles, personas, papeleras).']);

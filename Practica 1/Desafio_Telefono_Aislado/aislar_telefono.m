@@ -12,30 +12,40 @@ disp('1. Nube de objetos original cargada.');
 
 % --- Fase Angular: Recorte Geométrico Secuencial ---
 
-% 2. Quitar Plano 1 (Suelo/Mesa) - Bajamos la tolerancia drásticamente a 0.01
-[~, ~, out1] = pcfitplane(pc, 0.015);
+% 2. Quitar Plano 1 (Suelo/Mesa) - Tolerancia equilibrada (2 cm)
+[~, ~, out1] = pcfitplane(pc, 0.02);
 resto = select(pc, out1);
 disp('2. Mesa/Suelo eliminado.');
 
 % 3. Quitar Plano 2 (Pared de fondo)
-[~, ~, out2] = pcfitplane(resto, 0.015);
+[~, ~, out2] = pcfitplane(resto, 0.02);
 resto = select(resto, out2);
 disp('3. Primera pared eliminada.');
 
-% 4. Quitar Plano 3 (Segunda pared lateral)
-[~, ~, out3] = pcfitplane(resto, 0.015);
+% 4. Quitar Plano 3 (Segunda lateral o superficie secundaria)
+[~, ~, out3] = pcfitplane(resto, 0.02);
 resto = select(resto, out3);
 disp('4. Segunda pared eliminada.');
 
-% 5. Quitar Cilindro
-[~, ~, outCil] = pcfitcylinder(resto, 0.015);
+% 5. Quitar Cilindro (bote)
+[~, ~, outCil] = pcfitcylinder(resto, 0.02);
 resto = select(resto, outCil);
 disp('5. Cilindro u objeto tubular eliminado.');
 
-% 6. Quitar Esfera
-[~, ~, outEsf] = pcfitsphere(resto, 0.015);
-nube_telefono = select(resto, outEsf); 
-disp('6. Esfera eliminada. Extrayendo el residuo (Teléfono).');
+% 6. Quitar Esfera (pelota)
+[~, ~, outEsf] = pcfitsphere(resto, 0.02);
+nube_sucia = select(resto, outEsf); 
+
+% --- Mejora de Calidad Computacional ---
+% Al aplicar RANSAC puramente geométrico, siempre quedan algunas 'chispas'
+% flotando (ruido residual) que desastabilizan visualmente al sujeto restante.
+% 7. Segmentación final: nos quedamos solo con la masa contigua principal.
+[labels, numClusters] = pcsegdist(nube_sucia, 0.03); 
+val_freq = mode(labels); % Hallar el grupo numérico que posee más puntos
+idx_telefono = find(labels == val_freq);
+nube_telefono = select(nube_sucia, idx_telefono);
+
+disp('6. Esfera eliminada. Teléfono destilado del ruido flotante.');
 
 % =========================================================================
 % Visualización del Resultado Final
