@@ -2,9 +2,10 @@
 
 clear all; close all; clc;
 
-% Ruta absoluta de la carpeta del script para guardar imagenes correctamente
+% Guardamos imagenes en Practica 2/images/ (mismo nivel que el README)
 script_dir = fileparts(mfilename('fullpath'));
-img_dir = fullfile(script_dir, 'images');
+practica_dir = fileparts(fileparts(script_dir));
+img_dir = fullfile(practica_dir, 'images');
 if ~exist(img_dir, 'dir'), mkdir(img_dir); end
 
 % 1. Cargamos la nube de puntos
